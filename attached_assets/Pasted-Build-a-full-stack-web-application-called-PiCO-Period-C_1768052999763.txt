@@ -1,0 +1,123 @@
+Build a full-stack web application called PiCO (Period Cycle Optimizer), focused on period tracking, smart ML-based predictions, safe community interaction, and women’s wellness content. The app must securely store user data, provide personalized insights, and include complete user profile management.
+
+🔐 User Authentication & Data Storage
+
+Implement secure user authentication (Sign up, Login, Logout)
+
+Support email/password authentication
+
+Use JWT-based authentication
+
+Store all user data securely in a database
+
+Each user should only access their own data
+
+Ensure privacy and data protection best practices
+
+👤 User Profile Page
+
+Create a dedicated Profile Page where users can:
+
+View and edit:
+
+Name / Username
+
+Age
+
+Cycle length (if known)
+
+Health preferences (optional)
+
+View period tracking history
+
+View prediction history
+
+Manage account settings
+
+Option to delete account (soft delete preferred)
+
+Display streaks or insights (optional)
+
+📅 Period Tracking Feature
+
+Allow users to:
+
+Log period start and end dates
+
+Update or edit past logs
+
+Store:
+
+Cycle history
+
+Duration and frequency
+
+Show data visually using:
+
+Calendar view
+
+Timeline or chart
+
+Persist all logs in the database linked to the user profile
+
+💬 Secret Chat Rooms (Unique Feature)
+
+Create community chat rooms focused on women’s health topics
+
+Enforce rule:
+
+Each user can send only 1 message per day
+
+Messages should be:
+
+Anonymous (no personal identifiers shown)
+
+Time-stamped
+
+Store messages securely
+
+Implement:
+
+Daily message limit logic
+
+Basic moderation support (future ready)
+
+No private messaging (public rooms only for safety)
+
+📖 Articles & Discussions
+
+Provide a section for:
+
+Women’s health articles
+
+Wellness and menstrual education
+
+Features:
+
+Users can read articles
+
+Users can comment on articles
+
+Comments stored and linked to user profiles
+
+Admin-only access for posting/editing articles
+
+🗄️ Database Requirements
+
+Design database collections/tables for:
+
+Users
+
+User Profiles
+
+Period Logs
+
+Predictions
+
+Chat Messages
+
+Articles
+
+Comments
+
+All data must be relationally linked to the user and secured
