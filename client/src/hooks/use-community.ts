@@ -38,8 +38,8 @@ export function useSendMessage(roomId: number) {
       });
       
       if (!res.ok) {
-        if (res.status === 400) throw new Error("Rate limit exceeded");
-        throw new Error("Failed to send message");
+        const errorData = await res.json().catch(() => ({ message: "Failed to send message" }));
+        throw new Error(errorData.message || "Failed to send message");
       }
       
       return api.rooms.messages.create.responses[201].parse(await res.json());

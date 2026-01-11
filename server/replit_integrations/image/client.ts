@@ -2,10 +2,13 @@ import fs from "node:fs";
 import OpenAI, { toFile } from "openai";
 import { Buffer } from "node:buffer";
 
-export const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+// Only initialize OpenAI if API key is provided (optional feature)
+export const openai = process.env.AI_INTEGRATIONS_OPENAI_API_KEY
+  ? new OpenAI({
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+    })
+  : null;
 
 /**
  * Generate an image and return as Buffer.
@@ -15,6 +18,9 @@ export async function generateImageBuffer(
   prompt: string,
   size: "1024x1024" | "512x512" | "256x256" = "1024x1024"
 ): Promise<Buffer> {
+  if (!openai) {
+    throw new Error("OpenAI API key not configured");
+  }
   const response = await openai.images.generate({
     model: "gpt-image-1",
     prompt,
@@ -41,6 +47,9 @@ export async function editImages(
     )
   );
 
+  if (!openai) {
+    throw new Error("OpenAI API key not configured");
+  }
   const response = await openai.images.edit({
     model: "gpt-image-1",
     image: images,

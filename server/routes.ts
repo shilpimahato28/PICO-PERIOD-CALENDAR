@@ -5,11 +5,15 @@ import { storage } from "./storage";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import OpenAI from "openai";
+import { predictWithMLModel } from "./ml-predictor";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+// Only initialize OpenAI if API key is provided (optional feature)
+const openai = process.env.AI_INTEGRATIONS_OPENAI_API_KEY
+  ? new OpenAI({
+      apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+      baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+    })
+  : null;
 
 export async function registerRoutes(
   httpServer: Server,
@@ -130,9 +134,10 @@ export async function registerRoutes(
       res.status(201).json(message);
     } catch (e) {
       if (e instanceof z.ZodError) {
-        res.status(400).json(e.errors);
+        res.status(400).json({ message: "Invalid message content", errors: e.errors });
       } else {
-        res.sendStatus(500);
+        console.error("Error creating message:", e);
+        res.status(500).json({ message: "Failed to send message" });
       }
     }
   });
@@ -154,26 +159,13 @@ export async function registerRoutes(
     }
 
     try {
-      // Use OpenAI to predict next date
-      const response = await openai.chat.completions.create({
-        model: "gpt-5.1",
-        messages: [
-          {
-            role: "system",
-            content: "You are a health assistant predicting period cycles. Output ONLY a JSON object with 'predictedStartDate' (YYYY-MM-DD) and 'confidence' (0-100). Do not include markdown formatting."
-          },
-          {
-            role: "user",
-            content: `Based on these past period logs, predict the next start date: ${JSON.stringify(logs.map(l => ({ start: l.startDate, end: l.endDate })))}`
-          }
-        ],
-        response_format: { type: "json_object" }
-      });
-
-      const result = JSON.parse(response.choices[0].message.content || "{}");
+      // Use ML model to predict next period
+      const result = await predictWithMLModel(logs);
       
-      if (!result.predictedStartDate) {
-          throw new Error("Invalid prediction response");
+      if (result.error || !result.predictedStartDate) {
+        return res.status(400).json({ 
+          message: result.error || "Failed to generate prediction" 
+        });
       }
 
       const prediction = await storage.createPrediction({
@@ -183,9 +175,11 @@ export async function registerRoutes(
       });
 
       res.status(201).json(prediction);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Prediction error:", error);
-      res.status(500).json({ message: "Failed to generate prediction" });
+      res.status(500).json({ 
+        message: error.message || "Failed to generate prediction" 
+      });
     }
   });
 

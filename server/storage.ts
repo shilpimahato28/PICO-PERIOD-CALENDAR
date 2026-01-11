@@ -141,8 +141,8 @@ export class DatabaseStorage implements IStorage {
     const now = new Date();
     const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    // This is a rough check, ideally use SQL date functions for DB time
-    const [count] = await db.select({ count: sql<number>`count(*)` })
+    // Use SQL date functions for proper timezone handling
+    const result = await db.select({ count: sql<number>`count(*)::int` })
       .from(messages)
       .where(and(
         eq(messages.userId, userId),
@@ -150,7 +150,7 @@ export class DatabaseStorage implements IStorage {
         sql`${messages.createdAt} >= ${startOfDay.toISOString()}`
       ));
       
-    return Number(count.count);
+    return Number(result[0]?.count || 0);
   }
 }
 

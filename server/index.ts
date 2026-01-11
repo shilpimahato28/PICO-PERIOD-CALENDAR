@@ -1,3 +1,5 @@
+import "dotenv/config"; // Load environment variables first
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
@@ -85,14 +87,25 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || "5000", 10);
-  httpServer.listen(
-    {
-      port,
-      host: "0.0.0.0",
-      reusePort: true,
-    },
-    () => {
+  
+  // Use cross-platform compatible listen format
+  // Windows doesn't support reusePort option or the object format
+  if (process.platform === "win32") {
+    // Windows: use simple listen format
+    httpServer.listen(port, () => {
       log(`serving on port ${port}`);
-    },
-  );
+    });
+  } else {
+    // Unix/Linux: use advanced options
+    httpServer.listen(
+      {
+        port,
+        host: "0.0.0.0",
+        reusePort: true,
+      },
+      () => {
+        log(`serving on port ${port}`);
+      },
+    );
+  }
 })();
